@@ -12,6 +12,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type Response struct {
+	Fighters []Fighter `json:"fighters"`
+}
+
 type Fighter struct {
 	Name      string `json:"name"`
 	Grappling string `json:"grappling"`
@@ -43,7 +47,12 @@ func apiFighters(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Fprintf(w, string(responseData))
+	var responseObject Response
+	json.Unmarshal(responseData, &responseObject)
+
+	for i := 0; i < len(responseObject.Fighters); i++ {
+		json.NewEncoder(w).Encode(responseObject.Fighters[i].Name)
+	}
 }
 
 func handleRequests() {
