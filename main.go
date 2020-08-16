@@ -3,8 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+
+	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -30,9 +33,23 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Homepage Hit")
 }
 
+func apiFighters(w http.ResponseWriter, r *http.Request) {
+	response, err := http.Get("https://top-fighters.herokuapp.com/api/")
+	if err != nil {
+		fmt.Print(err.Error())
+		os.Exit(1)
+	}
+	responseData, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Fprintf(w, string(responseData))
+}
+
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.HandleFunc("/", homePage)
+	myRouter.HandleFunc("/api", apiFighters).Methods("GET")
 	myRouter.HandleFunc("/fighters", allFighters).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8081", myRouter))
 }
